@@ -45,6 +45,7 @@ private:
 	enum class ClientState
 	{
 		Stopped,
+		Start,
 		Connecting,
 		Connected
 	};
@@ -86,7 +87,9 @@ private:
 
 	// TODO(you): UDP virtual connection lab session
 
+	double lastPacketReceivedTime = 0.0;
 
+	float secondsSinceLastPing = 0.0f;
 
 	//////////////////////////////////////////////////////////////////////
 	// Replication

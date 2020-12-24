@@ -12,8 +12,6 @@ public:
 
 	void setListenPort(int port);
 
-
-
 private:
 
 	//////////////////////////////////////////////////////////////////////
@@ -34,8 +32,6 @@ private:
 
 	void onDisconnect() override;
 
-
-
 	//////////////////////////////////////////////////////////////////////
 	// Client proxies
 	//////////////////////////////////////////////////////////////////////
@@ -51,6 +47,7 @@ private:
 		GameObject *gameObject = nullptr;
 
 		// TODO(you): UDP virtual connection lab session
+		double lastPacketReceivedTime = 0.0;
 		// TODO(you): World state replication lab session
 		// TODO(you): Reliability on top of UDP lab session
 
@@ -66,7 +63,7 @@ private:
 
     void destroyClientProxy(ClientProxy *clientProxy);
 
-
+	void DisconnectClient(ClientProxy* clientProxy);
 
 public:
 
@@ -119,10 +116,8 @@ private:
 
 	uint16 listenPort = 0;
 
-
-
 	// TODO(you): UDP virtual connection lab session
-
+	float secondsSinceLastPing = 0.0f;
 };
 
 

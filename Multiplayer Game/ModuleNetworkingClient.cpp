@@ -104,6 +104,8 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 {
 	// TODO(you): UDP virtual connection lab session
 
+	lastPacketReceivedTime = Time.time;
+
 	uint32 protoId;
 	packet >> protoId;
 	if (protoId != PROTOCOL_ID) return;
@@ -142,7 +144,6 @@ void ModuleNetworkingClient::onUpdate()
 
 	// TODO(you): UDP virtual connection lab session
 
-
 	if (state == ClientState::Connecting)
 	{
 		secondsSinceLastHello += Time.deltaTime;
@@ -163,59 +164,77 @@ void ModuleNetworkingClient::onUpdate()
 	else if (state == ClientState::Connected)
 	{
 		// TODO(you): UDP virtual connection lab session
-
-		// Process more inputs if there's space
-		if (inputDataBack - inputDataFront < ArrayCount(inputData))
+		if (Time.time - lastPacketReceivedTime > DISCONNECT_TIMEOUT_SECONDS)
 		{
-			// Pack current input
-			uint32 currentInputData = inputDataBack++;
-			InputPacketData &inputPacketData = inputData[currentInputData % ArrayCount(inputData)];
-			inputPacketData.sequenceNumber = currentInputData;
-			inputPacketData.horizontalAxis = Input.horizontalAxis;
-			inputPacketData.verticalAxis = Input.verticalAxis;
-			inputPacketData.buttonBits = packInputControllerButtons(Input);
+			disconnect();
 		}
 
-		secondsSinceLastInputDelivery += Time.deltaTime;
-
-		// Input delivery interval timed out: create a new input packet
-		if (secondsSinceLastInputDelivery > inputDeliveryIntervalSeconds)
-		{
-			secondsSinceLastInputDelivery = 0.0f;
-
-			OutputMemoryStream packet;
-			packet << PROTOCOL_ID;
-			packet << ClientMessage::Input;
-
-			// TODO(you): Reliability on top of UDP lab session
-
-			for (uint32 i = inputDataFront; i < inputDataBack; ++i)
-			{
-				InputPacketData &inputPacketData = inputData[i % ArrayCount(inputData)];
-				packet << inputPacketData.sequenceNumber;
-				packet << inputPacketData.horizontalAxis;
-				packet << inputPacketData.verticalAxis;
-				packet << inputPacketData.buttonBits;
-			}
-
-			// Clear the queue
-			inputDataFront = inputDataBack;
-
-			sendPacket(packet, serverAddress);
-		}
-
-		// TODO(you): Latency management lab session
-
-		// Update camera for player
-		GameObject *playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
-		if (playerGameObject != nullptr)
-		{
-			App->modRender->cameraPosition = playerGameObject->position;
-		}
 		else
 		{
-			// This means that the player has been destroyed (e.g. killed)
-		}
+			// Process more inputs if there's space
+			if (inputDataBack - inputDataFront < ArrayCount(inputData))
+			{
+				// Pack current input
+				uint32 currentInputData = inputDataBack++;
+				InputPacketData& inputPacketData = inputData[currentInputData % ArrayCount(inputData)];
+				inputPacketData.sequenceNumber = currentInputData;
+				inputPacketData.horizontalAxis = Input.horizontalAxis;
+				inputPacketData.verticalAxis = Input.verticalAxis;
+				inputPacketData.buttonBits = packInputControllerButtons(Input);
+			}
+
+			secondsSinceLastInputDelivery += Time.deltaTime;
+
+			// TODO(you): UDP virtual connection lab session
+			secondsSinceLastPing += Time.deltaTime;
+
+			if (secondsSinceLastPing < PING_INTERVAL_SECONDS)
+			{
+				secondsSinceLastPing = 0.0f;
+
+				OutputMemoryStream ping;
+				ping << ClientMessage::Ping;
+			}
+
+			// Input delivery interval timed out: create a new input packet
+			if (secondsSinceLastInputDelivery > inputDeliveryIntervalSeconds)
+			{
+				secondsSinceLastInputDelivery = 0.0f;
+
+				OutputMemoryStream packet;
+				packet << PROTOCOL_ID;
+				packet << ClientMessage::Input;
+
+				// TODO(you): Reliability on top of UDP lab session
+
+				for (uint32 i = inputDataFront; i < inputDataBack; ++i)
+				{
+					InputPacketData& inputPacketData = inputData[i % ArrayCount(inputData)];
+					packet << inputPacketData.sequenceNumber;
+					packet << inputPacketData.horizontalAxis;
+					packet << inputPacketData.verticalAxis;
+					packet << inputPacketData.buttonBits;
+				}
+
+				// Clear the queue
+				inputDataFront = inputDataBack;
+
+				sendPacket(packet, serverAddress);
+			}
+
+			// TODO(you): Latency management lab session
+
+			// Update camera for player
+			GameObject* playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
+			if (playerGameObject != nullptr)
+			{
+				App->modRender->cameraPosition = playerGameObject->position;
+			}
+			else
+			{
+				// This means that the player has been destroyed (e.g. killed)
+			}
+		}			
 	}
 }
 
