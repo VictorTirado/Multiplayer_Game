@@ -378,6 +378,7 @@ Sprite * ModuleRender::addSprite(GameObject *parent)
 	Sprite *sprite = &sprites[parent->id];
 	sprite->gameObject = parent;
 	spriteCount++;
+	parent->sprite = sprite;
 	return sprite;
 }
 

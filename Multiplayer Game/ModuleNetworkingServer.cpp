@@ -63,6 +63,9 @@ void ModuleNetworkingServer::onGui()
 					ImGui::Text(" - port: %d", ntohs(clientProxies[i].address.sin_port));
 					ImGui::Text(" - name: %s", clientProxies[i].name.c_str());
 					ImGui::Text(" - id: %d", clientProxies[i].clientId);
+					ImGui::Text(" - Last packet time: %.04f", clientProxies[i].lastPacketReceivedTime);
+					ImGui::Text(" - Seconds since repl.: %.04f", clientProxies[i].secondsSinceLastReplication);
+
 					if (clientProxies[i].gameObject != nullptr)
 					{
 						ImGui::Text(" - gameObject net id: %d", clientProxies[i].gameObject->networkId);
@@ -144,6 +147,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					GameObject *gameObject = networkGameObjects[i];
 					
 					// TODO(you): World state replication lab session
+					proxy->replicationManager.create(gameObject->networkId);
 				}
 
 				LOG("Message received: hello - from player %s", proxy->name.c_str());
@@ -237,6 +241,18 @@ void ModuleNetworkingServer::onUpdate()
 				}
 
 				// TODO(you): World state replication lab session
+				if (clientProxy.secondsSinceLastReplication >= REPLICATION_INTERVAL_SECONDS && !clientProxy.replicationManager.commandList.empty())
+				{
+					clientProxy.secondsSinceLastReplication = 0;
+
+					OutputMemoryStream packet;
+					packet << ServerMessage::Replication;
+
+					Delivery* del = clientProxy.deliveryManager.WriteSequenceNumber(packet);
+					clientProxy.replicationManager.write(packet);
+
+					sendPacket(packet, clientProxy.address);
+				}
 
 				// TODO(you): Reliability on top of UDP lab session
 			}
@@ -389,6 +405,7 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 		if (clientProxies[i].connected)
 		{
 			// TODO(you): World state replication lab session
+			clientProxies[i].replicationManager.create(gameObject->networkId);
 		}
 	}
 
@@ -403,6 +420,7 @@ void ModuleNetworkingServer::updateNetworkObject(GameObject * gameObject)
 		if (clientProxies[i].connected)
 		{
 			// TODO(you): World state replication lab session
+			clientProxies[i].replicationManager.update(gameObject->networkId);
 		}
 	}
 }
@@ -415,6 +433,7 @@ void ModuleNetworkingServer::destroyNetworkObject(GameObject * gameObject)
 		if (clientProxies[i].connected)
 		{
 			// TODO(you): World state replication lab session
+			clientProxies[i].replicationManager.destroy(gameObject->networkId);
 		}
 	}
 

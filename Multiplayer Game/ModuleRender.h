@@ -2,6 +2,16 @@
 
 struct Texture;
 
+enum class TextureType {
+	None = -1,
+	Spacecraft1,
+	Spacecraft2,
+	Spacecraft3,
+	Laser,
+	Asteroid1,
+	Asteroid2
+};
+
 struct Sprite
 {
 	GameObject *gameObject = nullptr;
@@ -9,6 +19,7 @@ struct Sprite
 	vec4 color = vec4{ 1.0f, 1.0f, 1.0f, 1.0f }; // NOTE(jesus): Color to tint the sprite
 	Texture * texture = nullptr;                 // NOTE(jesus): Texture with the actual image
 	int  order = 0;                              // NOTE(jesus): determines the drawing order
+	TextureType textureType = TextureType::None;
 };
 
 const uint8 MAX_ANIMATION_CLIP_FRAMES = 25;

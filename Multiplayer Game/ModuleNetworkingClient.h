@@ -14,6 +14,8 @@ public:
 
 	void setPlayerInfo(const char *playerName, uint8 spaceshipType);
 
+	void SetInputDataFront(uint32 front);
+
 
 
 private:
@@ -79,8 +81,6 @@ private:
 	float inputDeliveryIntervalSeconds = 0.05f;
 	float secondsSinceLastInputDelivery = 0.0f;
 
-
-
 	//////////////////////////////////////////////////////////////////////
 	// Virtual connection
 	//////////////////////////////////////////////////////////////////////
@@ -97,7 +97,8 @@ private:
 
 	// TODO(you): World state replication lab session
 
-
+	ReplicationManagerClient replicationManager;
+	DeliveryManager* deliveryManager;
 
 	//////////////////////////////////////////////////////////////////////
 	// Delivery manager

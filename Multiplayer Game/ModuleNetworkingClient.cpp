@@ -18,7 +18,10 @@ void ModuleNetworkingClient::setPlayerInfo(const char * pPlayerName, uint8 pSpac
 	spaceshipType = pSpaceshipType;
 }
 
-
+void ModuleNetworkingClient::SetInputDataFront(uint32 front)
+{
+	inputDataFront = front;
+}
 
 //////////////////////////////////////////////////////////////////////
 // ModuleNetworking virtual methods
@@ -132,6 +135,11 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 	else if (state == ClientState::Connected)
 	{
 		// TODO(you): World state replication lab session
+
+		if (message == ServerMessage::Replication && deliveryManager->ProcessSequenceNumber(packet))
+		{
+			replicationManager.Read(packet, this);
+		}
 
 		// TODO(you): Reliability on top of UDP lab session
 	}
