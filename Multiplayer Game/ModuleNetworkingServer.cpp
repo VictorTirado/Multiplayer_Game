@@ -168,7 +168,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 			if (proxy != nullptr && IsValid(proxy->gameObject))
 			{
 				// TODO(you): Reliability on top of UDP lab session
-
+				uint32 lastSeq = 0u;
 				// Read input data
 				while (packet.RemainingByteCount() > 0)
 				{
@@ -180,6 +180,9 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 
 					if (inputData.sequenceNumber >= proxy->nextExpectedInputSequenceNumber)
 					{
+						if (lastSeq < inputData.sequenceNumber) {
+							lastSeq = inputData.sequenceNumber;
+						}
 						proxy->gamepad.horizontalAxis = inputData.horizontalAxis;
 						proxy->gamepad.verticalAxis = inputData.verticalAxis;
 						unpackInputControllerButtons(inputData.buttonBits, proxy->gamepad);
@@ -187,6 +190,8 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 						proxy->nextExpectedInputSequenceNumber = inputData.sequenceNumber + 1;
 					}
 				}
+				if (lastSeq > 0)
+					proxy->replicationManager.notification(proxy->gameObject->networkId, lastSeq);
 			}
 		}
 		// TODO(you): UDP virtual connection lab session
@@ -252,14 +257,17 @@ void ModuleNetworkingServer::onUpdate()
 					clientProxy.replicationManager.write(packet);
 
 					sendPacket(packet, clientProxy.address);
+
 				}
 
 				// TODO(you): Reliability on top of UDP lab session
+
 			}
 		}
 		if (secondsSinceLastPing > PING_INTERVAL_SECONDS)
 		{
 			secondsSinceLastPing = 0.0f;
+			secondsSinceLastPing += Time.deltaTime;
 		}
 	}
 }
