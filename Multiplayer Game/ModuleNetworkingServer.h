@@ -76,7 +76,7 @@ public:
 	// Spawning network objects
 	//////////////////////////////////////////////////////////////////////
 
-	GameObject * spawnPlayer(uint8 spaceshipType, vec2 initialPosition, float initialAngle);
+	GameObject * spawnPlayer(ClientProxy* clientProxy, uint8 spaceshipType, vec2 initialPosition, float initialAngle);
 
 
 
@@ -86,8 +86,8 @@ private:
 	// Updating / destroying network objects
 	//////////////////////////////////////////////////////////////////////
 
-	GameObject * instantiateNetworkObject();
-	friend GameObject *(NetworkInstantiate)();
+	GameObject * instantiateNetworkObject(ClientProxy* clientProxy = nullptr);
+	friend GameObject * NetworkInstantiate();
 
 	void updateNetworkObject(GameObject *gameObject);
 	friend void (NetworkUpdate)(GameObject *);
