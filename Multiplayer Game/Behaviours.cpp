@@ -28,12 +28,12 @@ void Laser::update()
 		if (secondsSinceCreation >= lifetimeSeconds) {
 			NetworkDestroy(gameObject);
 		}
+		else
+		{
+			NetworkUpdate(gameObject);
+		}
 	}
 }
-
-
-
-
 
 void Spaceship::start()
 {
@@ -82,6 +82,7 @@ void Spaceship::onInput(const InputController &input)
 			laser->sprite = App->modRender->addSprite(laser);
 			laser->sprite->order = 3;
 			laser->sprite->texture = App->modResources->laser;
+			laser->sprite->textureType = TextureType::Laser;
 
 			Laser *laserBehaviour = App->modBehaviour->addLaser(laser);
 			laserBehaviour->isServer = isServer;
@@ -103,7 +104,10 @@ void Spaceship::update()
 
 void Spaceship::destroy()
 {
-	Destroy(lifebar);
+	if (lifebar)
+	{
+		Destroy(lifebar);
+	}
 }
 
 void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
@@ -140,6 +144,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 			explosion->sprite = App->modRender->addSprite(explosion);
 			explosion->sprite->texture = App->modResources->explosion1;
 			explosion->sprite->order = 100;
+			explosion->sprite->textureType = TextureType::Explosion;
 
 			explosion->animation = App->modRender->addAnimation(explosion);
 			explosion->animation->clip = App->modResources->explosionClip;
