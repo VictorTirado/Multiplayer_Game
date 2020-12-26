@@ -120,7 +120,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					// Create new network object
 					vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f};
 					float initialAngle = 360.0f * Random.next();
-					proxy->gameObject = spawnPlayer(spaceshipType, initialPosition, initialAngle);
+					proxy->gameObject = spawnPlayer(proxy, spaceshipType, initialPosition, initialAngle);
 				}
 				else
 				{
@@ -226,8 +226,9 @@ void ModuleNetworkingServer::onUpdate()
 		{
 			if (clientProxy.connected)
 			{
+				clientProxy.secondsSinceLastReplication += Time.deltaTime;
 				// TODO(you): UDP virtual connection lab session
-				if (clientProxy.lastPacketReceivedTime > DISCONNECT_TIMEOUT_SECONDS)
+				if (Time.time -  clientProxy.lastPacketReceivedTime > DISCONNECT_TIMEOUT_SECONDS)
 				{
 					DisconnectClient(&clientProxy);
 				}
@@ -235,6 +236,7 @@ void ModuleNetworkingServer::onUpdate()
 				if (secondsSinceLastPing > PING_INTERVAL_SECONDS)
 				{
 					OutputMemoryStream ping;
+					ping << PROTOCOL_ID;
 					ping << ServerMessage::Ping;
 					sendPacket(ping, clientProxy.address);
 				}
@@ -251,6 +253,7 @@ void ModuleNetworkingServer::onUpdate()
 					clientProxy.secondsSinceLastReplication = 0;
 
 					OutputMemoryStream packet;
+					packet << PROTOCOL_ID;
 					packet << ServerMessage::Replication;
 
 					Delivery* del = clientProxy.deliveryManager.WriteSequenceNumber(packet);
@@ -361,10 +364,10 @@ void ModuleNetworkingServer::destroyClientProxy(ClientProxy *clientProxy)
 // Spawning
 //////////////////////////////////////////////////////////////////////
 
-GameObject * ModuleNetworkingServer::spawnPlayer(uint8 spaceshipType, vec2 initialPosition, float initialAngle)
+GameObject * ModuleNetworkingServer::spawnPlayer(ClientProxy* clientProxy, uint8 spaceshipType, vec2 initialPosition, float initialAngle)
 {
 	// Create a new game object with the player properties
-	GameObject *gameObject = NetworkInstantiate();
+	GameObject *gameObject = instantiateNetworkObject(clientProxy);
 	gameObject->position = initialPosition;
 	gameObject->size = { 100, 100 };
 	gameObject->angle = initialAngle;
@@ -374,12 +377,15 @@ GameObject * ModuleNetworkingServer::spawnPlayer(uint8 spaceshipType, vec2 initi
 	gameObject->sprite->order = 5;
 	if (spaceshipType == 0) {
 		gameObject->sprite->texture = App->modResources->spacecraft1;
+		gameObject->sprite->textureType = TextureType::Spacecraft1;
 	}
 	else if (spaceshipType == 1) {
 		gameObject->sprite->texture = App->modResources->spacecraft2;
+		gameObject->sprite->textureType = TextureType::Spacecraft2;
 	}
 	else {
 		gameObject->sprite->texture = App->modResources->spacecraft3;
+		gameObject->sprite->textureType = TextureType::Spacecraft3;
 	}
 
 	// Create collider
@@ -399,7 +405,7 @@ GameObject * ModuleNetworkingServer::spawnPlayer(uint8 spaceshipType, vec2 initi
 // Update / destruction
 //////////////////////////////////////////////////////////////////////
 
-GameObject * ModuleNetworkingServer::instantiateNetworkObject()
+GameObject * ModuleNetworkingServer::instantiateNetworkObject(ClientProxy* clientProxy)
 {
 	// Create an object into the server
 	GameObject * gameObject = Instantiate();
@@ -413,7 +419,10 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 		if (clientProxies[i].connected)
 		{
 			// TODO(you): World state replication lab session
-			clientProxies[i].replicationManager.create(gameObject->networkId);
+			if (clientProxy == nullptr || clientProxy->clientId != clientProxies[i].clientId)
+			{
+				clientProxies[i].replicationManager.create(gameObject->networkId);
+			}			
 		}
 	}
 
