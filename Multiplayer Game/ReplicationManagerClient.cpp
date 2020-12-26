@@ -1,5 +1,4 @@
 #include "Networks.h"
-
 // TODO(you): World state replication lab session
 
 #include "ReplicationManagerClient.h"
@@ -26,7 +25,7 @@ void ReplicationManagerClient::Read(const InputMemoryStream& packet, ModuleNetwo
 
 				if (newGo)
 				{
-					Sprite* newSprite = App->modRender->addSprite(newGo);
+					newGo->sprite = App->modRender->addSprite(newGo);
 					packet >> newGo->position.x;
 					packet >> newGo->position.y;
 					newGo->finalPos = newGo->initialPos = newGo->position;
@@ -63,6 +62,11 @@ void ReplicationManagerClient::Read(const InputMemoryStream& packet, ModuleNetwo
 					case TextureType::Laser:
 						newGo->sprite->texture = App->modResources->laser;
 						break;
+					case TextureType::Explosion:
+						newGo->sprite->texture = App->modResources->explosion1;
+						newGo->animation = App->modRender->addAnimation(newGo);
+						newGo->animation->clip = App->modResources->explosionClip;
+						break;
 					default:
 						break;
 					}
@@ -82,15 +86,10 @@ void ReplicationManagerClient::Read(const InputMemoryStream& packet, ModuleNetwo
 
 				if (go)
 				{
-					go->initialPos = go->position;
+					packet >> go->position.x;
+					packet >> go->position.y;
 
-					packet >> go->finalPos.x;
-					packet >> go->finalPos.y;
-
-					go->initialAngle = go->angle;
-					packet >> go->finalAngle;
-
-					go->secondsElapsed = 0.0f;;;;
+					packet >> go->angle;
 				}
 			}
 		}
