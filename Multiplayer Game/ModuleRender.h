@@ -8,8 +8,7 @@ enum class TextureType {
 	Spacecraft2,
 	Spacecraft3,
 	Laser,
-	Asteroid1,
-	Asteroid2
+	Explosion
 };
 
 struct Sprite
