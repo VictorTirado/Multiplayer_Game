@@ -54,6 +54,8 @@ void ModuleNetworkingClient::onStart()
 
 	secondsSinceLastHello = 9999.0f;
 	secondsSinceLastInputDelivery = 0.0f;
+
+	deliveryManager = new DeliveryManager;
 }
 
 void ModuleNetworkingClient::onGui()
@@ -109,6 +111,7 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 
 	lastPacketReceivedTime = Time.time;
 
+	// ??????
 	uint32 protoId;
 	packet >> protoId;
 	if (protoId != PROTOCOL_ID) return;
@@ -197,12 +200,14 @@ void ModuleNetworkingClient::onUpdate()
 			// TODO(you): UDP virtual connection lab session
 			secondsSinceLastPing += Time.deltaTime;
 
-			if (secondsSinceLastPing < PING_INTERVAL_SECONDS)
+			if (secondsSinceLastPing > PING_INTERVAL_SECONDS)
 			{
 				secondsSinceLastPing = 0.0f;
 
 				OutputMemoryStream ping;
+				ping << PROTOCOL_ID;
 				ping << ClientMessage::Ping;
+				sendPacket(ping, serverAddress);
 			}
 
 			// Input delivery interval timed out: create a new input packet
