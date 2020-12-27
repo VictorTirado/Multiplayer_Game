@@ -16,6 +16,9 @@ struct GameObject
 	// Collider component
 	Collider *collider = nullptr;
 
+	// Audio component
+	AudioClip *clip = nullptr;
+
 	// "Script" component
 	Behaviour *behaviour = nullptr;
 

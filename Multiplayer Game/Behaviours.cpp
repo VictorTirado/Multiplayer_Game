@@ -81,9 +81,10 @@ void Spaceship::onInput(const InputController &input)
 
 			laser->sprite = App->modRender->addSprite(laser);
 			laser->sprite->order = 3;
+			laser->clip = App->modResources->audioClipLaser;
 			laser->sprite->texture = App->modResources->laser;
 			laser->sprite->textureType = TextureType::Laser;
-
+			App->modSound->playAudioClip(App->modResources->audioClipLaser);
 			Laser *laserBehaviour = App->modBehaviour->addLaser(laser);
 			laserBehaviour->isServer = isServer;
 
@@ -145,6 +146,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 			explosion->sprite->texture = App->modResources->explosion1;
 			explosion->sprite->order = 100;
 			explosion->sprite->textureType = TextureType::Explosion;
+			explosion->clip = App->modResources->audioClipExplosion;
 
 			explosion->animation = App->modRender->addAnimation(explosion);
 			explosion->animation->clip = App->modResources->explosionClip;
