@@ -46,6 +46,9 @@ void ReplicationManagerClient::Read(const InputMemoryStream& packet, ModuleNetwo
 					packet >> newGo->sprite->color.b;
 					packet >> newGo->sprite->color.a;
 
+					
+
+
 					packet >> newGo->sprite->textureType;
 
 					switch (newGo->sprite->textureType)
@@ -61,11 +64,19 @@ void ReplicationManagerClient::Read(const InputMemoryStream& packet, ModuleNetwo
 						break;
 					case TextureType::Laser:
 						newGo->sprite->texture = App->modResources->laser;
+						newGo->clip = App->modResources->audioClipLaser;
+						newGo->playsound = true;
+						//packet >> newGo->clip->bitsPerSample;
+						//packet >> newGo->clip->channelCount;
+						//packet >> newGo->clip->sampleCount;
+						//////packet >> newGo->clip->samples;
+						//packet >> newGo->clip->samplingRate;
 						break;
 					case TextureType::Explosion:
 						newGo->sprite->texture = App->modResources->explosion1;
 						newGo->animation = App->modRender->addAnimation(newGo);
 						newGo->animation->clip = App->modResources->explosionClip;
+						newGo->clip = App->modResources->audioClipExplosion;
 						break;
 					default:
 						break;
@@ -88,7 +99,12 @@ void ReplicationManagerClient::Read(const InputMemoryStream& packet, ModuleNetwo
 				{
 					packet >> go->position.x;
 					packet >> go->position.y;
-
+					if (go->playsound == true)
+					{
+						App->modSound->playAudioClip(go->clip);
+						go->playsound = false;
+					}
+					
 					packet >> go->angle;
 				}
 			}

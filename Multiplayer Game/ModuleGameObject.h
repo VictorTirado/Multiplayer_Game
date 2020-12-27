@@ -18,7 +18,7 @@ struct GameObject
 
 	// Audio component
 	AudioClip *clip = nullptr;
-
+	bool playsound = false;
 	// "Script" component
 	Behaviour *behaviour = nullptr;
 

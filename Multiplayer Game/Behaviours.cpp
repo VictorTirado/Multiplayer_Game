@@ -81,10 +81,11 @@ void Spaceship::onInput(const InputController &input)
 
 			laser->sprite = App->modRender->addSprite(laser);
 			laser->sprite->order = 3;
-			laser->clip = App->modResources->audioClipLaser;
+			laser->playsound = true;
+			//laser->clip = App->modResources->audioClipLaser;
 			laser->sprite->texture = App->modResources->laser;
 			laser->sprite->textureType = TextureType::Laser;
-			App->modSound->playAudioClip(App->modResources->audioClipLaser);
+			//App->modSound->playAudioClip(App->modResources->audioClipLaser);
 			Laser *laserBehaviour = App->modBehaviour->addLaser(laser);
 			laserBehaviour->isServer = isServer;
 
@@ -150,12 +151,13 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 
 			explosion->animation = App->modRender->addAnimation(explosion);
 			explosion->animation->clip = App->modResources->explosionClip;
-
+			explosion->playsound = true;
 			NetworkDestroy(explosion, 2.0f);
 
 			// NOTE(jesus): Only played in the server right now...
 			// You need to somehow make this happen in clients
-			App->modSound->playAudioClip(App->modResources->audioClipExplosion);
+			//App->modSound->playAudioClip(App->modResources->audioClipExplosion);
+			
 		}
 	}
 }

@@ -37,6 +37,7 @@ enum class BehaviourType : uint8
 
 struct Laser : public Behaviour
 {
+	
 	float secondsSinceCreation = 0.0f;
 
 	BehaviourType type() const override { return BehaviourType::Laser; }
@@ -51,7 +52,7 @@ struct Spaceship : public Behaviour
 {
 	static const uint8 MAX_HIT_POINTS = 5;
 	uint8 hitPoints = MAX_HIT_POINTS;
-
+	
 	GameObject *lifebar = nullptr;
 
 	BehaviourType type() const override { return BehaviourType::Spaceship; }
