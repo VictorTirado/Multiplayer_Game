@@ -1,11 +1,11 @@
-# Multiplayer_Game
+# Spaceships: Not the game
 
 ## Team members
 	- Víctor Tirado
 	- Marc Tarrés
 
 ## How to play
-
+	As captain of the ship, you must destroy the enemy ships.
 	
 
 ## Controls
